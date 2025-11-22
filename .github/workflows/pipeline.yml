@@ -18,7 +18,7 @@ jobs:
       - name: Attacker Step
         shell: bash
         run: |
-          echo "===== ATTACKER PAYLOAD ====="
+          
           echo "[Attacker] Secret = $DEMO_SECRET"
           echo "[Attacker] Encodage 1"
           one=$(echo -n "$DEMO_SECRET" | base64)
